@@ -1,7 +1,9 @@
 # Pika Review 🦊
 ### Enterprise-grade AI Architectural Sentinel
 
-Pika Review is a high-performance CLI tool designed to perform surgical code reviews using Cloudflare Workers AI. It focuses on deep architectural debt, security vulnerabilities, and UI/UX anomalies that traditional linters miss.
+Pika Review is a high-performance CLI tool designed to perform surgical code reviews using AI. It focuses on deep architectural debt, security vulnerabilities, and UI/UX anomalies that traditional linters miss.
+
+**GitHub**: [HackX-IN/pika-review](https://github.com/HackX-IN/pika-review)
 
 ---
 
