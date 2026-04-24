@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+bun.lockb
+pnpm-lock.yaml
+package-lock.json
+
+# Build output
+dist/
+
+# Local configuration & Secrets
+.env
+.pika-review.yaml
+.pika-reports/
+
+# IDEs & System files
+.vscode/
+.idea/
+.DS_Store
+*.log
+
+# Testing
+temp-test-dir/
+coverage/

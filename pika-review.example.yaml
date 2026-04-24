@@ -1,0 +1,35 @@
+# Pika Review Example Configuration
+# Copy this to ~/.pika-review.yaml and fill in your credentials.
+
+ai:
+  # Your Cloudflare Account ID
+  accountId: "your_account_id_here"
+
+  # Your Workers AI API Token
+  apiKey: "your_api_key_here"
+
+  # The AI model to use
+  # Recommended: @cf/meta/llama-3-8b-instruct or @cf/meta/llama-4-scout-17b-16e-instruct
+  model: "@cf/meta/llama-3-8b-instruct"
+
+  # Custom OpenAI-compatible endpoint (Optional)
+  # If left empty, it defaults to the Cloudflare Workers AI API
+  baseURL: "https://api.cloudflare.com/client/v4/accounts/YOUR_ACCOUNT_ID/ai/v1"
+
+  # Custom engineered prompt (Optional)
+  # Use {{code}} as a placeholder for the code to be analyzed.
+  # If left empty, a highly-engineered default prompt is used.
+  prompt: |
+    <role>You are a Senior Security Architect.</role>
+    <task>Analyze the following code for high-severity vulnerabilities: {{code}}</task>
+    <output_format>Return ONLY a JSON object matching the internal schema.</output_format>
+
+scanner:
+  # Global ignores (These are merged with any local .pikaignore files)
+  ignoreFiles:
+    - "*.lock"
+    - "package-lock.json"
+    - "*.svg"
+    - "*.png"
+    - "node_modules"
+    - ".git"
