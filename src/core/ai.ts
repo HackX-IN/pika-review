@@ -2,10 +2,12 @@ import OpenAI from "openai";
 import { ReviewSchema, type CodeReview } from "../utils/schema.js";
 import { getConfig } from "../utils/config.js";
 import { logger } from "../utils/logger.js";
+import path from "path";
+import fs from "fs";
 
 /**
  * Structural Extractor: Isolate the JSON object from AI chatter.
- * MoE (Mixture of Experts) models often add preamble or postscript; 
+ * MoE (Mixture of Experts) models often add preamble or postscript;
  * this ensures we only parse the valid payload even if wrapped in markdown.
  */
 export function extractJSON(raw: string): string {
@@ -38,7 +40,7 @@ export function extractJSON(raw: string): string {
   }
 
   let snippet = cleaned.substring(start, end + 1);
-  
+
   // Heuristic: MoE models sometimes miss commas between objects in an array
   snippet = snippet.replace(/\}\s*\{/g, "},{");
 
@@ -60,37 +62,56 @@ export function extractJSON(raw: string): string {
 }
 
 /**
- * Deep Analysis Engine: Communicates with Cloudflare Workers AI.
+ * Deep Analysis Engine: Communicates with the AI provider.
  * Uses XML-structured prompts for better instruction following in smaller LLMs.
  */
-export async function analyzeDiff(diff: string): Promise<CodeReview> {
+export async function analyzeDiff(diff: string, fileName: string): Promise<CodeReview> {
   const config = getConfig();
 
   if (!config.ai.apiKey || !config.ai.accountId) {
-    throw new Error("Missing Cloudflare credentials in ~/.pika-review.yaml");
+    throw new Error("Missing AI provider credentials in ~/.pika-review.yaml");
   }
 
-  // Neuron Safety: Truncate input to protect the 10,000 daily free limit.
+  // Rate Limit Safety: Truncate input to protect the daily free limit.
   // 30,000 chars is roughly 7,500 tokens, leaving room for a detailed response.
   const MAX_CHARS = 30000;
-  const safeDiff = diff.length > MAX_CHARS 
-    ? diff.substring(0, MAX_CHARS) + "\n... [Content truncated for token safety]"
-    : diff;
+  const safeDiff =
+    diff.length > MAX_CHARS
+      ? diff.substring(0, MAX_CHARS) +
+        "\n... [Content truncated for token safety]"
+      : diff;
 
-  const baseURL = (config.ai.baseURL && config.ai.baseURL.trim())
-    ? config.ai.baseURL
-    : `https://api.cloudflare.com/client/v4/accounts/${config.ai.accountId}/ai/v1`;
+  const baseURL =
+    config.ai.baseURL && config.ai.baseURL.trim()
+      ? config.ai.baseURL
+      : `https://api.cloudflare.com/client/v4/accounts/${config.ai.accountId}/ai/v1`;
 
   const openai = new OpenAI({
     apiKey: config.ai.apiKey,
     baseURL,
   });
 
+  // Load custom architecture rules if they exist
+  let complianceSection = "";
+  try {
+    const rulesPath = path.join(process.cwd(), ".pika-rules.md");
+    if (fs.existsSync(rulesPath)) {
+      complianceSection = `
+<compliance_standards>
+${fs.readFileSync(rulesPath, "utf-8")}
+</compliance_standards>`;
+    }
+  } catch (e) {}
+
   const defaultPrompt = `
 <role>
   You are an Elite Senior Full-Stack Architect and Security Researcher.
   Your task is to perform a surgical review of the provided code.
-</role>
+</role>${complianceSection}
+
+<context>
+  Reviewing File: ${fileName}
+</context>
 
 <task>
   Identify high-impact issues related to:
@@ -129,9 +150,10 @@ ${safeDiff}
 </code_to_analyze>
 `;
 
-  const finalPrompt = (config.ai.prompt && config.ai.prompt.trim())
-    ? config.ai.prompt.replace("{{code}}", safeDiff)
-    : defaultPrompt;
+  const finalPrompt =
+    config.ai.prompt && config.ai.prompt.trim()
+      ? config.ai.prompt.replace("{{code}}", safeDiff)
+      : defaultPrompt;
 
   try {
     const response = await openai.chat.completions.create({
@@ -143,12 +165,14 @@ ${safeDiff}
 
     const rawContent = response.choices[0]?.message?.content || "{}";
     const cleanedContent = extractJSON(rawContent);
-    
+
     try {
       const parsedData = JSON.parse(cleanedContent);
       return ReviewSchema.parse(parsedData);
     } catch (e) {
-      logger.error(`Structural recovery failed. AI returned malformed payload.`);
+      logger.error(
+        `Structural recovery failed. AI returned malformed payload.`,
+      );
       logger.dim(`Snippet: ${cleanedContent.substring(0, 100)}...`);
       return { reviews: [] };
     }

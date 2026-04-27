@@ -13,25 +13,26 @@ export async function scanAction(files: string[], options: any) {
 
   let targets = files.length > 0 ? files : undefined;
 
-  // Interactive Discovery: If no files provided and no git changes, ask the user
-  if (!targets && !isCI) {
-    const gitChanges = getDiffFiles(target);
-    if (gitChanges.length === 0) {
-      logger.info("No git changes detected. Entering interactive selection mode...");
-      const allFiles = listProjectFiles();
-      
-      if (allFiles.length > 0) {
-        const selection = await prompts({
-          type: "multiselect",
-          name: "files",
-          message: "Select files to analyze (Space to select, Enter to confirm):",
-          choices: allFiles.map(f => ({ title: f, value: f })),
-          hint: "- Space to select. Return to submit"
-        });
+  // Interactive Discovery: If requested or if no files provided and no git changes
+  if (!isCI && (options.interactive || (!targets && getDiffFiles(target).length === 0))) {
+    logger.info("Entering interactive selection mode...");
+    const allFiles = listProjectFiles();
+    
+    if (allFiles.length > 0) {
+      const selection = await prompts({
+        type: "multiselect",
+        name: "files",
+        message: "Select files to analyze (Space to select, Enter to confirm):",
+        choices: allFiles.map(f => ({ title: f, value: f })),
+        hint: "- Space to select. Return to submit",
+        instructions: false
+      });
 
-        if (selection.files && selection.files.length > 0) {
-          targets = selection.files;
-        }
+      if (selection.files && selection.files.length > 0) {
+        targets = selection.files;
+      } else if (options.interactive) {
+        logger.warn("No files selected. Exiting.");
+        return;
       }
     }
   }

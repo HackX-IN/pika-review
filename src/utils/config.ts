@@ -18,11 +18,11 @@ export interface PikaConfig {
 
 const DEFAULT_CONFIG: PikaConfig = {
   ai: {
-    accountId: "", // Required for Cloudflare default
+    accountId: "", // Account ID if required by provider
     apiKey: "",
     model: "@cf/meta/llama-3-8b-instruct",
     prompt: "",
-    baseURL: "", // Leave empty for Cloudflare, or set for OpenAI/Grok/Local
+    baseURL: "", // Leave empty for default provider, or set for custom API
   },
 };
 
@@ -36,7 +36,7 @@ export function initConfig() {
       mode: 0o600,
     });
     logger.success(`Configuration initialized at ${CONFIG_PATH}`);
-    logger.info("Please edit this file and add your Cloudflare Account ID and API Token.");
+    logger.info("Please edit this file and add your AI provider credentials.");
   } else {
     logger.warn(`Configuration already exists at ${CONFIG_PATH}`);
   }
@@ -60,13 +60,44 @@ export function getIgnoredFiles(): string[] {
   const ignorePath = path.join(process.cwd(), ".pikaignore");
   if (!fs.existsSync(ignorePath)) {
     return [
-      ".svg", ".lock", "package-lock.json", ".png", ".jpg", ".jpeg", ".ico",
-      "node_modules", ".git", "dist", "build", "out", ".next", "public",
-      ".pika-reports", ".env", ".DS_Store", "bun.lockb", "pnpm-lock.yaml",
-      "venv", ".venv", "__pycache__", ".pytest_cache",
-      "target", ".gradle", ".idea", ".vscode", "vendor",
-      "coverage", ".turbo", "tests", "__tests__", "spec", "specs",
-      "cypress", "playwright-report", "test-results", ".nyc_output"
+      ".svg",
+      ".lock",
+      "package-lock.json",
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".ico",
+      "node_modules",
+      ".git",
+      "dist",
+      "build",
+      "out",
+      ".next",
+      "public",
+      ".pika-reports",
+      ".env",
+      ".DS_Store",
+      "bun.lockb",
+      "pnpm-lock.yaml",
+      "venv",
+      ".venv",
+      "__pycache__",
+      ".pytest_cache",
+      "target",
+      ".gradle",
+      ".idea",
+      ".vscode",
+      "vendor",
+      "coverage",
+      ".turbo",
+      "tests",
+      "__tests__",
+      "spec",
+      "specs",
+      "cypress",
+      "playwright-report",
+      "test-results",
+      ".nyc_output",
     ];
   }
   const content = fs.readFileSync(ignorePath, "utf-8");

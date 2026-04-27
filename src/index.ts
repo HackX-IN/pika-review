@@ -3,6 +3,8 @@ import { Command } from "commander";
 import chalk from "chalk";
 import { initAction } from "./cmd/init.js";
 import { scanAction } from "./cmd/scan.js";
+import { viewAction } from "./cmd/view.js";
+import { statsAction } from "./cmd/stats.js";
 import { logger } from "./utils/logger.js";
 
 /**
@@ -13,20 +15,23 @@ const program = new Command();
 
 // Branding Header
 const BRAND = `
-  ${chalk.bgCyan.black.bold(" PIKA REVIEW ")} ${chalk.dim("v2.0.0")}
-  ${chalk.italic.gray("Enterprise-grade AI Architectural Sentinel")}
+  ${chalk.bgCyan.black.bold(" PIKA REVIEW ")} ${chalk.dim("v2.0.0 Enterprise")}
+  ${chalk.italic.gray("AI Architectural Sentinel & Compliance Engine")}
 `;
 
 const HELPER_TEXT = `
 ${chalk.bold.cyan("🚀 Quick Start:")}
   $ pika-review scan           ${chalk.dim("# Scan staged git changes (default)")}
-  $ pika-review scan -u        ${chalk.dim("# Scan unstaged git changes")}
+  $ pika-review scan -i        ${chalk.dim("# Interactive file selection mode")}
+  $ pika-review view           ${chalk.dim("# Open the latest interactive report")}
+  $ pika-review stats          ${chalk.dim("# View architectural health trends")}
   $ pika-review scan file.ts   ${chalk.dim("# Scan a specific file")}
   $ pika-review scan f1 f2     ${chalk.dim("# Scan multiple specific files")}
 
 ${chalk.bold.cyan("⌨️  Shortcuts & Tips:")}
   - Use ${chalk.yellow("--ci")} in GitHub Actions to fail on Critical/High issues.
-  - Create a ${chalk.yellow(".pikaignore")} file to skip specific directories.
+  - Create ${chalk.yellow(".pika-rules.md")} to enforce project-specific architecture.
+  - Use ${chalk.yellow("pika-ignore")} in code comments to skip specific lines.
   - Review artifacts are stored in ${chalk.yellow(".pika-reports/")} automatically.
 
 ${chalk.bold.cyan("📊 Progress & Concurrency:")}
@@ -36,7 +41,7 @@ ${chalk.bold.cyan("📊 Progress & Concurrency:")}
 
 program
   .name("pika-review")
-  .description("Enterprise-grade AI Code Reviewer for Cloudflare Workers AI")
+  .description("Enterprise-grade AI Architectural Code Reviewer")
   .version("2.0.0")
   .addHelpText("before", BRAND)
   .addHelpText("after", HELPER_TEXT);
@@ -50,9 +55,26 @@ program
   });
 
 program
+  .command("view")
+  .description("Open the latest interactive HTML report in your browser")
+  .action(async () => {
+    console.log(BRAND);
+    await viewAction();
+  });
+
+program
+  .command("stats")
+  .description("View architectural health trends and scan history")
+  .action(async () => {
+    console.log(BRAND);
+    await statsAction();
+  });
+
+program
   .command("scan [files...]", { isDefault: true }) // Set scan as the default command
   .description("Scan git changes or specific files for architectural anomalies")
   .option("-u, --unstaged", "Analyze unstaged changes instead of staged")
+  .option("-i, --interactive", "Interactively select files to scan")
   .option("--ci", "Headless CI/CD mode (fails on Critical/High issues, strips visuals)")
   .action(async (files, options) => {
     // Only show branding if not in CI mode and if files were explicitly passed or if it's the default

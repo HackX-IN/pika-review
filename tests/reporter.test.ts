@@ -1,5 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { setupReportDir, writeMarkdownReport } from "../src/core/reporter.js";
+import { setupReportDir, writeMarkdownReport, writeHTMLReport } from "../src/core/reporter.js";
 import fs from "fs";
 import path from "path";
 
@@ -30,5 +30,37 @@ describe("Reporter Utility", () => {
     
     // Cleanup
     fs.unlinkSync(filePath);
+  });
+
+  test("writeHTMLReport should generate report and update history.json", () => {
+    const mockFindings = [
+      {
+        fileName: "src/test.ts",
+        reviews: [
+          {
+            line: 5,
+            severity: "Critical" as const,
+            finding: "Logic error",
+            impact: "System crash",
+            recommendation: "Fix it"
+          }
+        ]
+      }
+    ];
+
+    const dir = setupReportDir();
+    const htmlPath = writeHTMLReport(dir, 1, mockFindings);
+    
+    expect(fs.existsSync(htmlPath)).toBe(true);
+    const htmlContent = fs.readFileSync(htmlPath, "utf-8");
+    expect(htmlContent).toContain("Critical");
+    expect(htmlContent).toContain("Logic error");
+
+    // Verify history.json
+    const historyPath = path.join(process.cwd(), ".pika-reports", "history.json");
+    expect(fs.existsSync(historyPath)).toBe(true);
+    const history = JSON.parse(fs.readFileSync(historyPath, "utf-8"));
+    expect(history.length).toBeGreaterThan(0);
+    expect(history[history.length - 1].totalIssues).toBe(1);
   });
 });

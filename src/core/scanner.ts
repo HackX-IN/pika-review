@@ -3,7 +3,7 @@ import fs from "fs";
 import cliProgress from "cli-progress";
 import pLimit from "p-limit";
 import { analyzeDiff } from "./ai.js";
-import { setupReportDir, writeMarkdownReport } from "./reporter.js";
+import { setupReportDir, writeMarkdownReport, writeHTMLReport } from "./reporter.js";
 import { getIgnoredFiles } from "../utils/config.js";
 import { logger } from "../utils/logger.js";
 import path from "path";
@@ -69,7 +69,7 @@ export function getDiffFiles(type: "staged" | "unstaged"): string[] {
 
 /**
  * Scan Orchestrator: Manages the review lifecycle.
- * Concurrency is limited to 3 to stay within the Cloudflare Workers AI free tier constraints.
+ * Concurrency is limited to 3 to stay within default provider free tier constraints.
  */
 export async function runScan(
   target: "staged" | "unstaged",
@@ -108,6 +108,7 @@ export async function runScan(
   if (bar) bar.start(files.length, 0, { file: "Starting..." });
 
   const generatedReports: string[] = [];
+  const allFindings: { fileName: string; reviews: any[] }[] = [];
   let criticalIssuesFound = false;
 
   const limit = pLimit(3);
@@ -127,7 +128,7 @@ export async function runScan(
         contentToScan = fs.readFileSync(file, "utf-8");
       } else {
         try {
-          contentToScan = execFileSync("git", ["diff", target === "staged" ? "--cached" : "", "--", file], { 
+          contentToScan = execFileSync("git", ["diff", "-U10", target === "staged" ? "--cached" : "", "--", file], { 
             encoding: "utf-8",
             stdio: ["ignore", "pipe", "ignore"] // Suppress stderr
           });
@@ -148,19 +149,37 @@ export async function runScan(
       // Token Estimator Check
       validateTokenLimit(contentToScan);
 
-      const result = await analyzeDiff(contentToScan);
+      const result = await analyzeDiff(contentToScan, file);
       
       if (result.reviews.length > 0) {
-        const hasCritical = result.reviews.some(r => r.severity === "Critical" || r.severity === "High");
-        if (hasCritical) criticalIssuesFound = true;
+        // Point 5: "Ignore" Comments Logic
+        const filteredReviews = result.reviews.filter(r => {
+          if (!r.line) return true;
+          try {
+            const fileLines = fs.readFileSync(file, "utf-8").split("\n");
+            const targetLineContent = fileLines[r.line - 1] || "";
+            if (targetLineContent.includes("pika-ignore")) return false;
+          } catch (e) {}
+          return true;
+        });
 
-        const reportPath = writeMarkdownReport(file, result.reviews, reportDir);
-        generatedReports.push(reportPath);
+        if (filteredReviews.length > 0) {
+          const hasCritical = filteredReviews.some(r => r.severity === "Critical" || r.severity === "High");
+          if (hasCritical) criticalIssuesFound = true;
+
+          const reportPath = writeMarkdownReport(file, filteredReviews, reportDir);
+          generatedReports.push(reportPath);
+          allFindings.push({ fileName: file, reviews: filteredReviews });
+        } else {
+          allFindings.push({ fileName: file, reviews: [] });
+        }
+      } else {
+        allFindings.push({ fileName: file, reviews: [] });
       }
     } catch (e: any) {
       if (e.message === "RATE_LIMIT") {
         if (bar) bar.stop();
-        logger.critical("DAILY NEURON LIMIT REACHED (10,000). Scanning aborted.");
+        logger.critical("DAILY RATE LIMIT REACHED. Scanning aborted.");
         process.exit(1);
       }
       logger.error(`Error scanning ${file}: ${e.message}`);
@@ -176,6 +195,13 @@ export async function runScan(
   if (isCI && criticalIssuesFound) {
     logger.critical("CI Pipeline Failed: Critical issues detected.");
     process.exit(1);
+  }
+
+  const htmlPath = writeHTMLReport(reportDir, files.length, allFindings);
+  
+  if (!isCI) {
+    logger.success("\nScan complete!");
+    logger.info(`Interactive Report: ${htmlPath}`);
   }
 
   return generatedReports;
