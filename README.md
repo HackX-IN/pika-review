@@ -129,6 +129,14 @@ pika-review hook install
 
 ---
 
+## 🤝 Contributing
+
+We welcome contributions from the community to help make Pika Review the ultimate architectural code reviewer! 
+
+Please read our **[Contributing Guide](CONTRIBUTING.md)** for details on how to set up local development, run compiler checks, write custom CLI commands, and submit high-quality Pull Requests.
+
+---
+
 ## 🛡️ Privacy & Security
 
 Pika Review processes your local git diffs and transmits them directly to your configured AI provider via SSL. No code is stored or cached by the Pika Review engine.
