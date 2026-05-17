@@ -3,6 +3,8 @@ import chalk from "chalk";
 import { execSync } from "child_process";
 import { runScan, getDiffFiles, listProjectFiles } from "../core/scanner.js";
 import { logger } from "../utils/logger.js";
+import { applyAutoFix } from "./autofix.js";
+import { postGitHubPRComments } from "./github.js";
 
 /**
  * CLI Command: scan
@@ -39,6 +41,11 @@ export async function scanAction(files: string[], options: any) {
   }
 
   const { markdownReports, htmlReport, findings } = await runScan(target, isCI, targets);
+
+  // If in CI and GITHUB_TOKEN is present, automatically post reviews
+  if (isCI && process.env.GITHUB_TOKEN && process.env.GITHUB_EVENT_PATH) {
+    await postGitHubPRComments(findings);
+  }
 
   if (!markdownReports || markdownReports.length === 0) {
     if (!isCI) {
@@ -88,6 +95,7 @@ export async function scanAction(files: string[], options: any) {
       message: "Choose post-scan action:",
       choices: [
         { title: "✨ Open Interactive HTML Dashboard (Recommended)", value: "html" },
+        { title: "🔧 Launch Interactive Auto-Fixer", value: "autofix" },
         { title: "📂 List generated Markdown file paths", value: "markdown" },
         { title: "🛑 Exit and start refactoring", value: "exit" },
       ],
@@ -102,6 +110,35 @@ export async function scanAction(files: string[], options: any) {
       } catch (e) {
         console.log(`     ${chalk.red("✖")} Failed to open browser automatically.`);
         console.log(`     ${chalk.dim(`Manually open: file://${htmlReport}`)}`);
+      }
+    } else if (response.action === "autofix") {
+      const fixableIssues: { title: string; value: any }[] = [];
+      
+      findings.forEach((f: any) => {
+        f.reviews.forEach((r: any) => {
+          if (r.line) {
+            fixableIssues.push({
+              title: `[${r.severity}] ${f.fileName}:${r.line} - ${r.finding.substring(0, 45)}...`,
+              value: { filePath: f.fileName, review: r }
+            });
+          }
+        });
+      });
+
+      if (fixableIssues.length === 0) {
+        console.log(`\n  ${chalk.yellow("⚠")} No fixable issues with valid line numbers found.`);
+      } else {
+        const issueSelect = await prompts({
+          type: "select",
+          name: "issue",
+          message: "Select an architectural issue to auto-patch:",
+          choices: fixableIssues,
+        });
+
+        if (issueSelect.issue) {
+          const { filePath, review } = issueSelect.issue;
+          applyAutoFix(filePath, review.line, review.recommendation);
+        }
       }
     } else if (response.action === "markdown") {
       console.log(`\n  ${chalk.bold("Generated Markdown Artifacts:")}`);

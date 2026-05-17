@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { calculateGrade, getGradeColor, generateBadge } from "./stats.js";
 
 /**
  * Helper to get a sanitized project name.
@@ -100,6 +101,10 @@ export function writeHTMLReport(
   const projectName = getProjectName();
   const timestamp = new Date().toLocaleString();
   const data = JSON.stringify(allFindings);
+
+  const grade = calculateGrade(allFindings);
+  const gradeColor = getGradeColor(grade);
+  generateBadge(grade);
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -523,7 +528,7 @@ export function writeHTMLReport(
               <polygon points="60,52 54,50 56,56" fill="#00F0FF" />
             </svg>
             <div class="brand-text">
-                <h1>Pika <span>Sentinel</span></h1>
+                <h1 style="display: flex; align-items: center; gap: 8px;">Pika <span>Sentinel</span> <span style="font-size: 0.8rem; background: ${gradeColor}; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: 800; text-shadow: none;">${grade}</span></h1>
                 <p>${projectName} • ${timestamp}</p>
             </div>
         </div>

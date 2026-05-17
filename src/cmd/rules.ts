@@ -52,15 +52,29 @@ export async function rulesAction() {
 
   // 1. Gather package.json context
   let projectTechStack = "";
+  const frameworkClassifications: string[] = [];
   try {
     const packageJsonPath = path.join(process.cwd(), "package.json");
     if (fs.existsSync(packageJsonPath)) {
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+      const allDeps = { ...(packageJson.dependencies || {}), ...(packageJson.devDependencies || {}) };
+      
+      if (allDeps["next"]) frameworkClassifications.push("Next.js Framework");
+      if (allDeps["react"]) frameworkClassifications.push("React UI Library");
+      if (allDeps["express"]) frameworkClassifications.push("Express.js Server");
+      if (allDeps["tailwindcss"]) frameworkClassifications.push("Tailwind CSS v4 styling");
+      if (allDeps["typescript"]) frameworkClassifications.push("TypeScript Static Typings");
+      if (allDeps["bun-types"] || allDeps["@types/bun"]) frameworkClassifications.push("Bun High-Performance Runtime");
+
       const deps = Object.keys(packageJson.dependencies || {}).join(", ");
       const devDeps = Object.keys(packageJson.devDependencies || {}).join(", ");
       projectTechStack += `Package Name: ${packageJson.name || "unknown"}\nDependencies: ${deps || "none"}\nDevDependencies: ${devDeps || "none"}\n`;
     }
   } catch (e) {}
+
+  if (frameworkClassifications.length > 0) {
+    projectTechStack += `Detected Frameworks & Archetypes: ${frameworkClassifications.join(", ")}\n`;
+  }
 
   // 2. Gather file layout context
   const files = listProjectFiles();

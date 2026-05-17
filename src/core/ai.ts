@@ -132,10 +132,10 @@ ${fs.readFileSync(rulesPath, "utf-8")}
 
 <task>
   Identify high-impact issues related to:
-  1. SYSTEM COMPROMISE: Security vulnerabilities, insecure data handling.
-  2. COMPUTATIONAL INEFFICIENCY: Algorithmic bottlenecks, memory leaks.
-  3. ARCHITECTURAL DEBT: Logic flaws, redundant complexity.
-  4. UI/UX ANOMALIES: Layout shifts, accessibility (a11y) violations, and CSS performance issues.
+  1. SYSTEM COMPROMISE & SECURITY: Vulnerabilities (OWASP Top 10 API/Web standard compliance), hardcoded credentials, private keys, API secrets, or insecure default configurations.
+  2. COMPUTATIONAL INEFFICIENCY: Algorithmic bottlenecks, memory leaks, nested processing.
+  3. ARCHITECTURAL DEBT: Logic flaws, breaking structures, redundant modular complexity.
+  4. UI/UX ANOMALIES: Layout shifts, accessibility (a11y) standard violations, and inefficient CSS paths.
 </task>
 
 <instructions>

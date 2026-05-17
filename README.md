@@ -1,4 +1,4 @@
-# Pika Review 🦊
+# Pika Review 🦊 [![Pika Sentinel Grade](badge.svg)](https://github.com/HackX-IN/pika-review)
 
 ### Enterprise-grade AI Architectural Sentinel & Compliance Engine
 

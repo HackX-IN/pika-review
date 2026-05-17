@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import chalk from "chalk";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { initAction } from "./cmd/init.js";
 import { scanAction } from "./cmd/scan.js";
 import { viewAction } from "./cmd/view.js";
@@ -8,17 +11,30 @@ import { statsAction } from "./cmd/stats.js";
 import { modelsAction } from "./cmd/models.js";
 import { hookAction } from "./cmd/hook.js";
 import { rulesAction } from "./cmd/rules.js";
+import { discussAction } from "./cmd/chat.js";
 import { logger } from "./utils/logger.js";
 
 /**
  * Pika Review: The Enterprise-Grade AI Code Reviewer.
  * Modular entry point for CLI operations.
  */
+// Get package.json version dynamically
+let version = "2.3.0";
+try {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const pkgPath = path.join(__dirname, "../package.json");
+  if (fs.existsSync(pkgPath)) {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+    if (pkg.version) version = pkg.version;
+  }
+} catch (e) {}
+
 const program = new Command();
 
 // Branding Header
 const BRAND = `
-  ${chalk.cyan.bold("◆  Pika Sentinel")}  ${chalk.dim(`v2.2.0 (Enterprise)`)}
+  ${chalk.cyan.bold("◆  Pika Sentinel")}  ${chalk.dim(`v${version} (Enterprise)`)}
   ${chalk.dim("─".repeat(42))}
   ${chalk.italic.gray("AI Architectural & Security Safeguard")}
 `;
@@ -30,9 +46,10 @@ const HELPER_TEXT = `
       -i, --interactive  Interactively pick files to scan
       --ci               Fail CI pipeline if critical/high issues are found
     ${chalk.bold("view")}               Open the latest interactive HTML report in browser
+    ${chalk.bold("discuss [file]")}     Launch an interactive Socratic chat session inside the console
     ${chalk.bold("stats")}              Print scan history & key quality trends
     ${chalk.bold("models")}             Interactively select Ollama models for offline audit
-    ${chalk.bold("hook")}               Install Git pre-commit scanner safeguard hook
+    ${chalk.bold("hook")}               Install Git pre-commit safeguard hook
     ${chalk.bold("rules")}              AI-generate architectural '.pika-rules.md'
 
   ${chalk.cyan.bold("Options & Advanced:")}
@@ -44,7 +61,7 @@ const HELPER_TEXT = `
 program
   .name("pika-review")
   .description("Enterprise-grade AI Architectural Code Reviewer")
-  .version("2.2.0")
+  .version(version)
   .addHelpText("before", BRAND)
   .addHelpText("after", HELPER_TEXT);
 
@@ -104,6 +121,14 @@ program
     } else {
       logger.info("Use 'pika-review rules --generate' to auto-generate architecture rules.");
     }
+  });
+
+program
+  .command("discuss <file>")
+  .description("Launch an interactive Socratic chat session inside the console focusing on design context")
+  .action(async (file) => {
+    console.log(BRAND);
+    await discussAction(file);
   });
 
 program

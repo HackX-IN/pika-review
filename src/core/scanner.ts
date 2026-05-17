@@ -9,6 +9,7 @@ import { getIgnoredFiles } from "../utils/config.js";
 import { logger } from "../utils/logger.js";
 import path from "path";
 import { validateTokenLimit } from "../utils/token.js";
+import { computeScanHash, getCache, setCache } from "./cache.js";
 
 /**
  * Project Discovery: List all relevant files for interactive selection.
@@ -98,6 +99,37 @@ export async function runScan(
       htmlReport: "",
       findings: []
     };
+  }
+
+  // Load custom architecture rules content
+  let rulesContent = "";
+  try {
+    const rulesPath = path.join(process.cwd(), ".pika-rules.md");
+    if (fs.existsSync(rulesPath)) {
+      rulesContent = fs.readFileSync(rulesPath, "utf-8");
+    }
+  } catch (e) {}
+
+  // Gather target file content profiles
+  const fileStates: { filePath: string; content: string }[] = [];
+  for (const file of files) {
+    try {
+      if (fs.existsSync(file)) {
+        const content = fs.readFileSync(file, "utf-8");
+        fileStates.push({ filePath: file, content });
+      }
+    } catch (e) {}
+  }
+
+  // Compute semantic hash and check database
+  const scanHash = computeScanHash(fileStates, rulesContent);
+  const cachedResult = getCache(scanHash);
+
+  if (cachedResult) {
+    if (!isCI) {
+      console.log(`\n  ${chalk.cyan("✓")}  ${chalk.bold("Instant Cache Hit: Loading results from local cache database (0ms).")}\n`);
+    }
+    return cachedResult;
   }
 
   const reportDir = setupReportDir();
@@ -208,9 +240,13 @@ export async function runScan(
     logger.success("\nScan complete!");
   }
 
-  return {
+  const payload = {
     markdownReports: generatedReports,
     htmlReport: htmlPath,
     findings: allFindings
   };
+
+  setCache(scanHash, payload);
+
+  return payload;
 }
