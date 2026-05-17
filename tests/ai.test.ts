@@ -32,4 +32,26 @@ describe("AI JSON Extractor", () => {
     const extracted = extractJSON(raw);
     expect(JSON.parse(extracted)).toHaveProperty("reviews");
   });
+
+  test("should strip JS-style single-line comments in JSON structures", () => {
+    const raw = `
+    {
+      // This is a comment from a local model
+      "reviews": [
+        {
+          "finding": "bug" // Another trailing comment
+        }
+      ]
+    }`;
+    const extracted = extractJSON(raw);
+    expect(() => JSON.parse(extracted)).not.toThrow();
+    expect(JSON.parse(extracted).reviews[0].finding).toBe("bug");
+  });
+
+  test("should strip trailing commas within objects and arrays", () => {
+    const raw = '{"reviews": [{"finding": "bug",},],}';
+    const extracted = extractJSON(raw);
+    expect(() => JSON.parse(extracted)).not.toThrow();
+    expect(JSON.parse(extracted).reviews[0].finding).toBe("bug");
+  });
 });
