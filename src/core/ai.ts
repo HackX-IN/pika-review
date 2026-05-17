@@ -73,8 +73,20 @@ export function extractJSON(raw: string): string {
  */
 export async function analyzeDiff(diff: string, fileName: string): Promise<CodeReview> {
   const config = getConfig();
-  const isOllama = config.ai.provider === "ollama";
-  const isCloudflare = config.ai.provider === "cloudflare";
+  
+  let provider = config.ai.provider?.toLowerCase() || "";
+  
+  // Intelligent Auto-Detection: Infers provider if missing or set to default/openai
+  if (!provider || provider === "openai") {
+    if (config.ai.apiKey?.startsWith("cfut_") || config.ai.accountId || config.ai.model?.startsWith("@cf/")) {
+      provider = "cloudflare";
+    } else if (config.ai.model?.includes("ollama") || config.ai.baseURL?.includes("11434")) {
+      provider = "ollama";
+    }
+  }
+
+  const isOllama = provider === "ollama";
+  const isCloudflare = provider === "cloudflare";
 
   // Relax credentials check: Only enforce accountId/apiKey for Cloudflare Workers AI
   if (isCloudflare && (!config.ai.apiKey || !config.ai.accountId)) {
@@ -95,7 +107,7 @@ export async function analyzeDiff(diff: string, fileName: string): Promise<CodeR
       : diff;
 
   const baseURL =
-    config.ai.baseURL && config.ai.baseURL.trim()
+    config.ai.baseURL && config.ai.baseURL.trim() && config.ai.baseURL !== "https://api.openai.com/v1"
       ? config.ai.baseURL
       : (isOllama
           ? "http://localhost:11434/v1"
@@ -200,7 +212,6 @@ ${safeDiff}
       throw e;
     }
 
-    logger.error(`AI analysis failed: ${error.message}`);
-    return { reviews: [] };
+    throw error;
   }
 }

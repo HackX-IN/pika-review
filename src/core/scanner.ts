@@ -214,12 +214,13 @@ export async function runScan(
         allFindings.push({ fileName: file, reviews: [] });
       }
     } catch (e: any) {
+      if (bar) bar.stop();
       if (e.message === "RATE_LIMIT") {
-        if (bar) bar.stop();
         logger.critical("DAILY RATE LIMIT REACHED. Scanning aborted.");
-        process.exit(1);
+      } else {
+        logger.critical(`AI Scanning failed: ${e.message}`);
       }
-      logger.error(`Error scanning ${file}: ${e.message}`);
+      process.exit(1);
     } finally {
       completed++;
       if (bar) bar.update(completed, { file });
