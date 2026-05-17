@@ -18,7 +18,7 @@ const program = new Command();
 
 // Branding Header
 const BRAND = `
-  ${chalk.cyan.bold("◆  Pika Sentinel")}  ${chalk.dim(`v2.1.0 (Enterprise)`)}
+  ${chalk.cyan.bold("◆  Pika Sentinel")}  ${chalk.dim(`v2.2.0 (Enterprise)`)}
   ${chalk.dim("─".repeat(42))}
   ${chalk.italic.gray("AI Architectural & Security Safeguard")}
 `;
@@ -44,7 +44,7 @@ const HELPER_TEXT = `
 program
   .name("pika-review")
   .description("Enterprise-grade AI Architectural Code Reviewer")
-  .version("2.1.0")
+  .version("2.2.0")
   .addHelpText("before", BRAND)
   .addHelpText("after", HELPER_TEXT);
 
