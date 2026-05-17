@@ -2,6 +2,7 @@ import { execFileSync } from "child_process";
 import fs from "fs";
 import cliProgress from "cli-progress";
 import pLimit from "p-limit";
+import chalk from "chalk";
 import { analyzeDiff } from "./ai.js";
 import { setupReportDir, writeMarkdownReport, writeHTMLReport } from "./reporter.js";
 import { getIgnoredFiles } from "../utils/config.js";
@@ -92,14 +93,18 @@ export async function runScan(
 
   if (files.length === 0) {
     if (!isCI) logger.success("No changes detected. Codebase is clean.");
-    return [];
+    return {
+      markdownReports: [],
+      htmlReport: "",
+      findings: []
+    };
   }
 
   const reportDir = setupReportDir();
   if (!isCI) logger.info(`Initializing Pika Review on ${files.length} file(s)...`);
 
   const bar = isCI ? null : new cliProgress.SingleBar({
-    format: ' {bar} {percentage}% | ETA: {eta}s | Scanning: {file}',
+    format: '  ' + chalk.cyan('{bar}') + ' ' + chalk.bold('{percentage}%') + ' │ ' + chalk.dim('ETA: {eta}s') + ' │ ' + chalk.gray('{file}'),
     barCompleteChar: '\u2588',
     barIncompleteChar: '\u2591',
     hideCursor: true,
@@ -201,8 +206,11 @@ export async function runScan(
   
   if (!isCI) {
     logger.success("\nScan complete!");
-    logger.info(`Interactive Report: ${htmlPath}`);
   }
 
-  return generatedReports;
+  return {
+    markdownReports: generatedReports,
+    htmlReport: htmlPath,
+    findings: allFindings
+  };
 }

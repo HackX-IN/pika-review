@@ -18,29 +18,27 @@ const program = new Command();
 
 // Branding Header
 const BRAND = `
-  ${chalk.bgCyan.black.bold(" PIKA REVIEW ")} ${chalk.dim("v2.1.0 Enterprise")}
-  ${chalk.italic.gray("AI Architectural Sentinel & Compliance Engine")}
+  ${chalk.cyan.bold("◆  Pika Sentinel")}  ${chalk.dim(`v2.1.0 (Enterprise)`)}
+  ${chalk.dim("─".repeat(42))}
+  ${chalk.italic.gray("AI Architectural & Security Safeguard")}
 `;
 
 const HELPER_TEXT = `
-${chalk.bold.cyan("🚀 Quick Start:")}
-  $ pika-review scan           ${chalk.dim("# Scan staged git changes (default)")}
-  $ pika-review scan -i        ${chalk.dim("# Interactive file selection mode")}
-  $ pika-review view           ${chalk.dim("# Open the latest interactive report")}
-  $ pika-review stats          ${chalk.dim("# View architectural health trends")}
-  $ pika-review models         ${chalk.dim("# Interactively configure local Ollama models")}
-  $ pika-review hook install   ${chalk.dim("# Install pre-commit offline quality safeguard")}
-  $ pika-review rules -g       ${chalk.dim("# AI-generate architectural .pika-rules.md")}
+  ${chalk.cyan.bold("Commands:")}
+    ${chalk.bold("scan")}               Scan git staged changes for issues (default)
+      -u, --unstaged     Scan unstaged changes instead of staged
+      -i, --interactive  Interactively pick files to scan
+      --ci               Fail CI pipeline if critical/high issues are found
+    ${chalk.bold("view")}               Open the latest interactive HTML report in browser
+    ${chalk.bold("stats")}              Print scan history & key quality trends
+    ${chalk.bold("models")}             Interactively select Ollama models for offline audit
+    ${chalk.bold("hook")}               Install Git pre-commit scanner safeguard hook
+    ${chalk.bold("rules")}              AI-generate architectural '.pika-rules.md'
 
-${chalk.bold.cyan("⌨️  Shortcuts & Tips:")}
-  - Use ${chalk.yellow("--ci")} in GitHub Actions to fail on Critical/High issues.
-  - Create ${chalk.yellow(".pika-rules.md")} to enforce project-specific architecture.
-  - Use ${chalk.yellow("pika-ignore")} in code comments to skip specific lines.
-  - Review artifacts are stored in ${chalk.yellow(".pika-reports/")} automatically.
-
-${chalk.bold.cyan("📊 Progress & Concurrency:")}
-  - Pika uses ${chalk.green("p-limit(3)")} to scan files in parallel without hitting rate limits.
-  - Real-time progress bars will show you the exact status of each analysis.
+  ${chalk.cyan.bold("Options & Advanced:")}
+    • Custom Rules:   Create a ${chalk.yellow(".pika-rules.md")} to feed custom codebase standards to the AI.
+    • Bypasses:       Add ${chalk.yellow("// pika-ignore")} or ${chalk.yellow("/* pika-ignore */")} in code to skip lines.
+    • Local LLM:      Select an offline model via '${chalk.green("pika-review models")}' for passwordless private runs.
 `;
 
 program

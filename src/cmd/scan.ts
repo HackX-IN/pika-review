@@ -1,5 +1,6 @@
 import prompts from "prompts";
 import chalk from "chalk";
+import { execSync } from "child_process";
 import { runScan, getDiffFiles, listProjectFiles } from "../core/scanner.js";
 import { logger } from "../utils/logger.js";
 
@@ -37,39 +38,78 @@ export async function scanAction(files: string[], options: any) {
     }
   }
 
-  let reports = await runScan(target, isCI, targets);
+  const { markdownReports, htmlReport, findings } = await runScan(target, isCI, targets);
 
-  if (!reports || reports.length === 0) {
+  if (!markdownReports || markdownReports.length === 0) {
     if (!isCI) {
-      logger.success("Scan complete. No critical architectural anomalies detected.");
-      logger.dim("Try scanning with '--unstaged' if you have uncommitted changes.");
+      console.log(`\n  ${chalk.green("✓")}  ${chalk.bold("Scan complete. No architectural anomalies or security risks detected.")}`);
+      console.log(`     ${chalk.dim("Try scanning with '--unstaged' if you have unstaged changes.")}\n`);
     }
     return;
   }
 
   if (!isCI) {
-    console.log(chalk.bold(`\n${"=".repeat(50)}`));
-    logger.warn(`ANALYTICAL REPORT READY`);
-    logger.dim(`${reports.length} file(s) require your immediate attention.\n`);
+    // Count findings by severity
+    let criticalCount = 0;
+    let highCount = 0;
+    let mediumCount = 0;
+    let lowCount = 0;
+    let totalIssues = 0;
+
+    findings.forEach((f: any) => {
+      totalIssues += f.reviews.length;
+      f.reviews.forEach((r: any) => {
+        if (r.severity === "Critical") criticalCount++;
+        else if (r.severity === "High") highCount++;
+        else if (r.severity === "Medium") mediumCount++;
+        else if (r.severity === "Low") lowCount++;
+      });
+    });
+
+    // Sleek summary box
+    console.log(`\n  ${chalk.cyan.bold("◆  Scan Completed Successfully")}`);
+    console.log(`     ${chalk.dim("─".repeat(34))}`);
+    console.log(`     ${chalk.bold("Files Audited:")}   ${findings.length}`);
+    console.log(`     ${chalk.bold("Total Findings:")}  ${totalIssues}`);
+    
+    if (totalIssues > 0) {
+      console.log(`\n     ${chalk.bold("Severity Breakdown:")}`);
+      if (criticalCount > 0) console.log(`       🚨 ${chalk.red.bold(criticalCount)} Critical`);
+      if (highCount > 0)     console.log(`       🔥 ${chalk.yellow.bold(highCount)} High`);
+      if (mediumCount > 0)   console.log(`       ⚠️ ${chalk.blue.bold(mediumCount)} Medium`);
+      if (lowCount > 0)      console.log(`       📝 ${chalk.gray.bold(lowCount)} Low`);
+    }
+    
+    console.log(`\n     ${chalk.bold("Obsidian Report:")}  ${chalk.cyan.underline(`file://${htmlReport}`)}\n`);
 
     const response = await prompts({
       type: "select",
       name: "action",
-      message: "What is your next step?",
+      message: "Choose post-scan action:",
       choices: [
-        { title: "📂 Open generated Markdown reports", value: "view" },
+        { title: "✨ Open Interactive HTML Dashboard (Recommended)", value: "html" },
+        { title: "📂 List generated Markdown file paths", value: "markdown" },
         { title: "🛑 Exit and start refactoring", value: "exit" },
       ],
       initial: 0,
     });
 
-    if (response.action === "view") {
-      logger.info("\nGenerated Artifacts:");
-      reports.forEach((r) => {
+    if (response.action === "html") {
+      console.log(`\n  ${chalk.cyan("→")} Opening interactive report in browser...`);
+      try {
+        const command = process.platform === "win32" ? "start" : process.platform === "darwin" ? "open" : "xdg-open";
+        execSync(`${command} "${htmlReport}"`);
+      } catch (e) {
+        console.log(`     ${chalk.red("✖")} Failed to open browser automatically.`);
+        console.log(`     ${chalk.dim(`Manually open: file://${htmlReport}`)}`);
+      }
+    } else if (response.action === "markdown") {
+      console.log(`\n  ${chalk.bold("Generated Markdown Artifacts:")}`);
+      markdownReports.forEach((r: string) => {
         const fileName = r.split("/").pop();
-        console.log(` ${chalk.cyan("→")} ${chalk.bold(fileName)} ${chalk.dim(`(${r})`)}`);
+        console.log(`    ${chalk.cyan("•")} ${chalk.bold(fileName)} ${chalk.dim(`(file://${r})`)}`);
       });
-      console.log(chalk.dim("\nTip: Use 'cat' or a Markdown viewer to read the findings."));
+      console.log(`\n  ${chalk.dim("Tip: Click any file:// link above to open directly in your editor.")}\n`);
     }
   }
 }
