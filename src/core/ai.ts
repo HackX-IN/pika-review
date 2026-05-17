@@ -20,6 +20,9 @@ export function extractJSON(raw: string): string {
       return ["\n", "\r", "\t"].includes(match) ? match : "";
     });
 
+  // Remove single-line comments that are not part of URLs
+  cleaned = cleaned.replace(/(?<!http:|https:)\/\/.*$/gm, "");
+
   // Find the outermost JSON structure
   const firstBrace = cleaned.indexOf("{");
   const firstBracket = cleaned.indexOf("[");
@@ -44,6 +47,9 @@ export function extractJSON(raw: string): string {
   // Heuristic: MoE models sometimes miss commas between objects in an array
   snippet = snippet.replace(/\}\s*\{/g, "},{");
 
+  // Clean trailing commas before closing braces/brackets (which break JSON.parse)
+  snippet = snippet.replace(/,\s*(\}|\])/g, "$1");
+
   // Heuristic Structural Recovery for Truncated Responses
   const openBraces = (snippet.match(/\{/g) || []).length;
   const closeBraces = (snippet.match(/\}/g) || []).length;
@@ -67,9 +73,16 @@ export function extractJSON(raw: string): string {
  */
 export async function analyzeDiff(diff: string, fileName: string): Promise<CodeReview> {
   const config = getConfig();
+  const isOllama = config.ai.provider === "ollama";
+  const isCloudflare = config.ai.provider === "cloudflare";
 
-  if (!config.ai.apiKey || !config.ai.accountId) {
-    throw new Error("Missing AI provider credentials in ~/.pika-review.yaml");
+  // Relax credentials check: Only enforce accountId/apiKey for Cloudflare Workers AI
+  if (isCloudflare && (!config.ai.apiKey || !config.ai.accountId)) {
+    throw new Error("Missing Cloudflare provider credentials (apiKey, accountId) in ~/.pika-review.yaml");
+  }
+  // For standard API providers (OpenAI, DeepSeek, etc.), we only need the apiKey
+  if (!isOllama && !isCloudflare && !config.ai.apiKey) {
+    throw new Error("Missing API Key (apiKey) in ~/.pika-review.yaml");
   }
 
   // Rate Limit Safety: Truncate input to protect the daily free limit.
@@ -84,10 +97,14 @@ export async function analyzeDiff(diff: string, fileName: string): Promise<CodeR
   const baseURL =
     config.ai.baseURL && config.ai.baseURL.trim()
       ? config.ai.baseURL
-      : `https://api.cloudflare.com/client/v4/accounts/${config.ai.accountId}/ai/v1`;
+      : (isOllama
+          ? "http://localhost:11434/v1"
+          : (isCloudflare
+              ? `https://api.cloudflare.com/client/v4/accounts/${config.ai.accountId}/ai/v1`
+              : "https://api.openai.com/v1"));
 
   const openai = new OpenAI({
-    apiKey: config.ai.apiKey,
+    apiKey: config.ai.apiKey || "ollama",
     baseURL,
   });
 

@@ -5,6 +5,9 @@ import { initAction } from "./cmd/init.js";
 import { scanAction } from "./cmd/scan.js";
 import { viewAction } from "./cmd/view.js";
 import { statsAction } from "./cmd/stats.js";
+import { modelsAction } from "./cmd/models.js";
+import { hookAction } from "./cmd/hook.js";
+import { rulesAction } from "./cmd/rules.js";
 import { logger } from "./utils/logger.js";
 
 /**
@@ -15,7 +18,7 @@ const program = new Command();
 
 // Branding Header
 const BRAND = `
-  ${chalk.bgCyan.black.bold(" PIKA REVIEW ")} ${chalk.dim("v2.0.0 Enterprise")}
+  ${chalk.bgCyan.black.bold(" PIKA REVIEW ")} ${chalk.dim("v2.1.0 Enterprise")}
   ${chalk.italic.gray("AI Architectural Sentinel & Compliance Engine")}
 `;
 
@@ -25,8 +28,9 @@ ${chalk.bold.cyan("🚀 Quick Start:")}
   $ pika-review scan -i        ${chalk.dim("# Interactive file selection mode")}
   $ pika-review view           ${chalk.dim("# Open the latest interactive report")}
   $ pika-review stats          ${chalk.dim("# View architectural health trends")}
-  $ pika-review scan file.ts   ${chalk.dim("# Scan a specific file")}
-  $ pika-review scan f1 f2     ${chalk.dim("# Scan multiple specific files")}
+  $ pika-review models         ${chalk.dim("# Interactively configure local Ollama models")}
+  $ pika-review hook install   ${chalk.dim("# Install pre-commit offline quality safeguard")}
+  $ pika-review rules -g       ${chalk.dim("# AI-generate architectural .pika-rules.md")}
 
 ${chalk.bold.cyan("⌨️  Shortcuts & Tips:")}
   - Use ${chalk.yellow("--ci")} in GitHub Actions to fail on Critical/High issues.
@@ -42,7 +46,7 @@ ${chalk.bold.cyan("📊 Progress & Concurrency:")}
 program
   .name("pika-review")
   .description("Enterprise-grade AI Architectural Code Reviewer")
-  .version("2.0.0")
+  .version("2.1.0")
   .addHelpText("before", BRAND)
   .addHelpText("after", HELPER_TEXT);
 
@@ -68,6 +72,40 @@ program
   .action(async () => {
     console.log(BRAND);
     await statsAction();
+  });
+
+program
+  .command("models")
+  .description("Select and configure local Ollama models interactively")
+  .action(async () => {
+    console.log(BRAND);
+    await modelsAction();
+  });
+
+program
+  .command("hook <action>")
+  .description("Install or uninstall Git pre-commit scanner safeguard hook")
+  .addHelpText("after", `\nActions:\n  install      Install Git pre-commit hook\n  uninstall    Remove Git pre-commit hook`)
+  .action(async (action) => {
+    if (action !== "install" && action !== "uninstall") {
+      logger.error("Invalid action. Use 'install' or 'uninstall'.");
+      process.exit(1);
+    }
+    console.log(BRAND);
+    await hookAction(action);
+  });
+
+program
+  .command("rules")
+  .description("AI architectural rules utilities")
+  .option("-g, --generate", "Auto-generate .pika-rules.md based on codebase")
+  .action(async (options) => {
+    console.log(BRAND);
+    if (options.generate) {
+      await rulesAction();
+    } else {
+      logger.info("Use 'pika-review rules --generate' to auto-generate architecture rules.");
+    }
   });
 
 program

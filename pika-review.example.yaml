@@ -2,19 +2,27 @@
 # Copy this to ~/.pika-review.yaml and fill in your credentials.
 
 ai:
-  # Your AI Provider Account ID (if applicable)
-  accountId: "your_account_id_here"
+  # AI Provider: 'openai', 'ollama', 'cloudflare', 'deepseek', etc.
+  provider: "openai"
 
-  # Your AI Provider API Token
+  # Your AI Provider API Token / Secret Key (Optional for local engines)
   apiKey: "your_api_key_here"
 
+  # Your Account ID (Only required if using Cloudflare Workers AI)
+  accountId: ""
+
   # The AI model to use
-  # Recommended: llama-3-8b-instruct or similar
-  model: "llama-3-8b-instruct"
+  # Cloud examples: gpt-4o (OpenAI), deepseek-coder (DeepSeek)
+  # Cloudflare examples: @cf/meta/llama-4-scout-17b-16e-instruct
+  # Ollama examples: qwen2.5-coder:7b, llama3:latest
+  model: "gpt-4o"
 
   # Custom OpenAI-compatible endpoint (Optional)
-  # If left empty, it defaults to the configured provider API
-  baseURL: "https://api.your-provider.com/v1"
+  # Leave empty for standard OpenAI. Set for other providers:
+  # - DeepSeek: https://api.deepseek.com/v1
+  # - Ollama: http://localhost:11434/v1
+  # - Cloudflare: https://api.cloudflare.com/client/v4/accounts/<accountId>/ai/v1
+  baseURL: "https://api.openai.com/v1"
 
   # Custom engineered prompt (Optional)
   # Use {{code}} as a placeholder for the code to be analyzed.

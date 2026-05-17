@@ -8,8 +8,9 @@ const CONFIG_PATH = path.join(os.homedir(), ".pika-review.yaml");
 
 export interface PikaConfig {
   ai: {
-    accountId: string;
-    apiKey: string;
+    provider?: string;
+    accountId?: string;
+    apiKey?: string;
     model: string;
     prompt?: string;
     baseURL?: string;
@@ -18,11 +19,12 @@ export interface PikaConfig {
 
 const DEFAULT_CONFIG: PikaConfig = {
   ai: {
-    accountId: "", // Account ID if required by provider
+    provider: "openai",
+    accountId: "", // Account ID if required (e.g. Cloudflare)
     apiKey: "",
-    model: "@cf/meta/llama-3-8b-instruct",
+    model: "gpt-4o",
     prompt: "",
-    baseURL: "", // Leave empty for default provider, or set for custom API
+    baseURL: "https://api.openai.com/v1", // Default OpenAI endpoint
   },
 };
 
@@ -51,6 +53,19 @@ export function getConfig(): PikaConfig {
     process.exit(1);
   }
   return yaml.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
+}
+
+/**
+ * Save configuration back to disk with correct permissions.
+ */
+export function saveConfig(config: PikaConfig) {
+  try {
+    fs.writeFileSync(CONFIG_PATH, yaml.stringify(config), {
+      mode: 0o600,
+    });
+  } catch (error: any) {
+    logger.error(`Failed to save configuration: ${error.message}`);
+  }
 }
 
 /**

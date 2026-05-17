@@ -17,7 +17,9 @@ dist/
 .idea/
 .DS_Store
 *.log
+.agent
 
 # Testing
 temp-test-dir/
 coverage/
+

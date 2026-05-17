@@ -11,12 +11,15 @@ Pika Review is a high-performance CLI tool designed to perform surgical code rev
 ## 🚀 Key Features
 
 - **🧠 Architecture Rules Engine**: Enforce project-specific standards via `.pika-rules.md`.
+- **🦙 Native Local Ollama Support**: Run 100% private, free, offline scans using local LLMs (e.g. Qwen, Llama).
+- **🎛️ Local Model Selector**: Interactively choose and configure local models from the command line.
+- **🛡️ Git Commit Safeguard Hook**: Prevent pushing high-severity compliance debt and vulnerabilities automatically.
 - **📊 Health Dashboard**: Track architectural health trends over time with `pika-review stats`.
 - **🎨 Premium Interactive Reports**: Immersive, dark-mode HTML reports for deep triage.
 - **🔍 Smart Context Scanning**: Uses `-U10` context windows for higher AI reasoning accuracy.
 - **🛡️ "Pika-Ignore" support**: Suppress specific lines using `// pika-ignore` comments.
 - **⚡ Parallel Orchestration**: Scans multiple files concurrently with `p-limit`.
-- **🌍 Provider Agnostic**: Works with OpenAI, Claude, Grok, or any OpenAI-compatible endpoint.
+- **🌍 Provider Agnostic**: Works with OpenAI, Claude, Grok, local Ollama, or any OpenAI-compatible endpoint.
 
 ---
 
@@ -80,13 +83,49 @@ pika-review stats
 
 ## 🔍 Usage
 
-| Command                 | Description                           |
-| :---------------------- | :------------------------------------ |
-| `pika-review scan`      | Scan staged git changes (Default)     |
-| `pika-review scan -i`   | Interactive file selection mode       |
-| `pika-review view`      | Open the latest interactive report    |
-| `pika-review stats`     | View architectural health dashboard   |
-| `pika-review scan --ci` | Fail pipeline on Critical/High issues |
+| Command                 | Description                                                  |
+| :---------------------- | :----------------------------------------------------------- |
+| `pika-review scan`      | Scan staged git changes (Default)                            |
+| `pika-review scan -i`   | Interactive file selection mode                              |
+| `pika-review view`      | Open the latest interactive report                           |
+| `pika-review stats`     | View architectural health trends and scan dashboard          |
+| `pika-review models`    | Interactively select and configure local Ollama models       |
+| `pika-review hook <act>`| Install (`install`) or uninstall (`uninstall`) Git safeguards |
+| `pika-review rules -g`  | Auto-generate architectural `.pika-rules.md` guidelines       |
+| `pika-review scan --ci` | Fail pipeline on Critical/High issues                        |
+
+---
+
+## 🦙 Local Ollama & Offline Setup
+
+Pika Review fully supports local, 100% private, offline code reviews via [Ollama](https://ollama.com).
+
+### 1. Configure Ollama Provider
+Initialize your configuration:
+```bash
+pika-review init
+```
+Open `~/.pika-review.yaml` and configure the Ollama provider:
+```yaml
+ai:
+  provider: "ollama"
+  model: "qwen2.5-coder:7b" # Or your pulled model
+  baseURL: "http://localhost:11434/v1"
+```
+
+### 2. Interactive Local Setup
+To avoid editing files manually, you can manage everything directly from the command line:
+
+```bash
+# Discover local pulled models and switch active model instantly
+pika-review models
+
+# Automatically bootstrap customized architectural rules for your tech stack
+pika-review rules --generate
+
+# Register git safeguard hooks to run scans automatically before commits
+pika-review hook install
+```
 
 ---
 
