@@ -107,140 +107,266 @@ export function writeHTMLReport(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pika Review | ${projectName}</title>
+    <title>Pika Sentinel Report | ${projectName}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0b0f1a;
-            --sidebar-bg: #151b2d;
-            --card-bg: #1e253a;
-            --text: #f1f5f9;
-            --text-dim: #94a3b8;
-            --accent: #38bdf8;
-            --critical: #f43f5e;
-            --high: #fb923c;
-            --medium: #fbbf24;
-            --low: #4ade80;
-            --border: rgba(255,255,255,0.08);
+            --bg: #09090b;
+            --sidebar-bg: #0c0c0e;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-hover: rgba(255, 255, 255, 0.04);
+            --text: #f3f4f6;
+            --text-dim: #a1a1aa;
+            --accent: #00F0FF;
+            --accent-glow: rgba(0, 240, 255, 0.15);
+            --critical: #ef4444;
+            --high: #f97316;
+            --medium: #eab308;
+            --low: #10b981;
+            --border: rgba(255, 255, 255, 0.08);
+            --font-sans: 'Outfit', sans-serif;
+            --font-mono: 'Fira Code', monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-            font-family: 'Inter', sans-serif; 
+            font-family: var(--font-sans); 
             background: var(--bg); 
             color: var(--text);
             display: flex;
             height: 100vh;
             overflow: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Sidebar */
+        /* Ambient glows and high-tech grid overlays */
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.01) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.01) 1px, transparent 1px);
+            background-size: 30px 30px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .bg-radial {
+            position: fixed;
+            top: -10%; right: -10%; width: 60vw; height: 60vw;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.03) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Sidebar container */
         aside {
-            width: 350px;
+            width: 360px;
             background: var(--sidebar-bg);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            box-shadow: 10px 0 30px rgba(0,0,0,0.3);
+            box-shadow: 10px 0 40px rgba(0,0,0,0.5);
             z-index: 10;
         }
 
         .brand {
-            padding: 32px 24px;
+            padding: 30px 24px;
             border-bottom: 1px solid var(--border);
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), transparent);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: linear-gradient(180deg, rgba(0, 240, 255, 0.02), transparent);
         }
 
-        .brand h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: var(--accent); display: flex; align-items: center; gap: 10px; }
-        .brand p { font-size: 0.8rem; color: var(--text-dim); margin-top: 8px; font-weight: 500; }
+        .brand-logo {
+            width: 38px;
+            height: 38px;
+            filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.5));
+        }
+
+        .brand-text h1 { 
+            font-size: 1.25rem; 
+            font-weight: 800; 
+            letter-spacing: -0.5px; 
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .brand-text h1 span {
+            color: var(--accent);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+
+        .brand-text p { 
+            font-size: 0.75rem; 
+            color: var(--text-dim); 
+            margin-top: 4px; 
+            font-weight: 500; 
+        }
 
         .sidebar-stats {
             padding: 20px 24px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
             border-bottom: 1px solid var(--border);
         }
 
         .stat-box {
-            background: rgba(255,255,255,0.03);
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
+            background: var(--card-bg);
             border: 1px solid var(--border);
+            padding: 12px 6px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.2s ease;
         }
 
-        .stat-val { display: block; font-size: 1.25rem; font-weight: 700; color: var(--accent); }
-        .stat-lab { display: block; font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); margin-top: 4px; letter-spacing: 0.05em; }
+        .stat-box:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-val { 
+            display: block; 
+            font-size: 1.15rem; 
+            font-weight: 800; 
+            color: var(--accent); 
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
+        }
+        
+        .stat-box.crit-stat .stat-val {
+            color: var(--critical);
+            text-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+        }
+
+        .stat-lab { 
+            display: block; 
+            font-size: 0.6rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            color: var(--text-dim); 
+            margin-top: 4px; 
+            letter-spacing: 0.05em; 
+        }
 
         .file-list {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
+            padding: 20px 16px;
         }
 
         .file-item {
             padding: 14px 16px;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             margin-bottom: 8px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            border: 1px solid transparent;
+            gap: 8px;
         }
 
-        .file-item:hover { background: rgba(255,255,255,0.04); border-color: var(--border); }
-        .file-item.active { background: var(--accent); color: #000; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); }
-        .file-item .name { font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; font-weight: 500; word-break: break-all; }
+        .file-item:hover { 
+            background: var(--card-hover); 
+            border-color: rgba(0, 240, 255, 0.2); 
+            transform: translateX(4px);
+        }
+
+        .file-item.active { 
+            background: rgba(0, 240, 255, 0.04); 
+            border-color: var(--accent); 
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.08); 
+        }
+
+        .file-item .name { 
+            font-size: 0.85rem; 
+            font-family: var(--font-mono); 
+            font-weight: 500; 
+            word-break: break-all;
+            color: var(--text-dim);
+            transition: color 0.2s;
+        }
+        
+        .file-item.active .name {
+            color: var(--accent);
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+        }
         
         .severity-pills { display: flex; gap: 4px; }
-        .pill { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.2); font-weight: 700; }
-        .file-item.active .pill { background: rgba(0,0,0,0.1); color: #000; }
+        .pill { 
+            font-size: 0.65rem; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            background: rgba(0,0,0,0.3); 
+            font-weight: 700; 
+            border: 1px solid rgba(255,255,255,0.05);
+        }
 
-        /* Main Content */
+        /* Main Content area */
         main {
             flex: 1;
             overflow-y: auto;
-            padding: 60px;
-            background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.05), transparent 40%);
+            padding: 60px 80px;
+            position: relative;
+            z-index: 5;
         }
 
         .content-container { max-width: 900px; margin: 0 auto; }
 
         .page-header {
-            margin-bottom: 50px;
-            animation: fadeInDown 0.5s ease-out;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
+            from { opacity: 0; transform: translateY(-12px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .page-header h2 { font-size: 2rem; font-family: 'JetBrains Mono', monospace; margin-bottom: 12px; color: #fff; }
-        .page-header p { color: var(--text-dim); font-size: 1rem; }
+        .page-header h2 { 
+            font-size: 1.85rem; 
+            font-family: var(--font-mono); 
+            margin-bottom: 12px; 
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        
+        .page-header p { color: var(--text-dim); font-size: 0.95rem; }
 
+        /* Anomaly Findings Cards */
         .issue-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 32px;
-            margin-bottom: 30px;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 24px;
             position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            transition: transform 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .issue-card:hover { transform: translateY(-4px); }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .issue-card:hover { 
+            transform: translateY(-2px); 
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
 
         .card-accent {
             position: absolute;
-            left: 0; top: 32px; bottom: 32px;
-            width: 5px;
+            left: 0; top: 30px; bottom: 30px;
+            width: 4px;
             border-radius: 0 4px 4px 0;
         }
 
@@ -257,46 +383,89 @@ export function writeHTMLReport(
         }
 
         .severity-tag {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
-            font-weight: 800;
-            padding: 6px 14px;
-            border-radius: 8px;
+            font-weight: 850;
+            padding: 4px 12px;
+            border-radius: 6px;
             letter-spacing: 0.05em;
         }
 
-        .severity-tag.Critical { background: rgba(244, 63, 94, 0.15); color: var(--critical); border: 1px solid var(--critical); }
-        .severity-tag.High { background: rgba(251, 146, 60, 0.15); color: var(--high); border: 1px solid var(--high); }
-        .severity-tag.Medium { background: rgba(251, 191, 36, 0.15); color: var(--medium); border: 1px solid var(--medium); }
-        .severity-tag.Low { background: rgba(74, 222, 128, 0.15); color: var(--low); border: 1px solid var(--low); }
+        .severity-tag.Critical { background: rgba(239, 68, 68, 0.1); color: var(--critical); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .severity-tag.High { background: rgba(249, 115, 22, 0.1); color: var(--high); border: 1px solid rgba(249, 115, 22, 0.2); }
+        .severity-tag.Medium { background: rgba(234, 179, 8, 0.1); color: var(--medium); border: 1px solid rgba(234, 179, 8, 0.2); }
+        .severity-tag.Low { background: rgba(16, 185, 129, 0.1); color: var(--low); border: 1px solid rgba(16, 185, 129, 0.2); }
 
-        .line-info { font-family: 'JetBrains Mono', monospace; color: var(--text-dim); font-size: 0.9rem; }
+        .line-info { font-family: var(--font-mono); color: var(--text-dim); font-size: 0.85rem; }
 
         .field-group { margin-bottom: 24px; }
+        .field-group:last-child { margin-bottom: 0; }
+        
         .field-label {
             font-size: 0.7rem;
             font-weight: 800;
             color: var(--text-dim);
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
-        .field-content { line-height: 1.7; color: #cbd5e1; font-size: 1.05rem; }
+        .field-content { line-height: 1.6; color: #d1d5db; font-size: 0.95rem; }
+
+        /* Recommendation Pre block with visual copy btn */
+        .pre-wrapper {
+            position: relative;
+            background: #040405;
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .pre-header {
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            padding: 6px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pre-lang {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .card-copy-btn {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-dim);
+            font-family: var(--font-sans);
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 3px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .card-copy-btn:hover {
+            border-color: rgba(0, 240, 255, 0.4);
+            color: var(--accent);
+        }
 
         pre {
-            background: #000;
-            padding: 24px;
-            border-radius: 12px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            margin-top: 15px;
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.5;
             overflow-x: auto;
-            border: 1px solid rgba(255,255,255,0.05);
-            color: #e2e8f0;
+            color: #c7d2fe;
         }
 
         .empty-state {
@@ -306,23 +475,57 @@ export function writeHTMLReport(
             justify-content: center;
             height: 60vh;
             text-align: center;
-            opacity: 0.6;
         }
 
-        .empty-state svg { width: 80px; height: 80px; margin-bottom: 24px; stroke: var(--text-dim); }
+        .empty-state svg { 
+            width: 64px; 
+            height: 64px; 
+            margin-bottom: 20px; 
+            stroke: var(--text-dim); 
+            opacity: 0.4;
+            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.1));
+        }
+        
+        .empty-state h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state p {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            max-width: 320px;
+        }
 
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
     </style>
 </head>
 <body>
+    <div class="bg-grid"></div>
+    <div class="bg-radial"></div>
+
     <aside>
         <div class="brand">
-            <h1>🦊 PIKA REVIEW</h1>
-            <p>${projectName} • ${timestamp}</p>
+            <svg viewBox="0 0 100 100" class="brand-logo" fill="none">
+              <circle cx="50" cy="50" r="44" stroke="#00F0FF" stroke-width="2" stroke-dasharray="4 8" opacity="0.3" />
+              <polygon points="50,42 22,26 34,50" fill="#0c4a6e" stroke="#00F0FF" stroke-width="1.5" stroke-linejoin="round" />
+              <polygon points="50,42 78,26 66,50" fill="#0c4a6e" stroke="#00F0FF" stroke-width="1.5" stroke-linejoin="round" />
+              <polygon points="50,78 20,48 36,48" fill="#0f172a" stroke="#00F0FF" stroke-width="1.5" stroke-linejoin="round" />
+              <polygon points="50,78 80,48 64,48" fill="#0f172a" stroke="#00F0FF" stroke-width="1.5" stroke-linejoin="round" />
+              <polygon points="50,42 36,48 50,78" fill="#1e293b" stroke="#00F0FF" stroke-width="1.5" stroke-linejoin="round" />
+              <polygon points="50,42 64,48 50,78" fill="#1e293b" stroke="#00F0FF" stroke-width="1.5" stroke-linejoin="round" />
+              <polygon points="40,52 46,50 44,56" fill="#00F0FF" />
+              <polygon points="60,52 54,50 56,56" fill="#00F0FF" />
+            </svg>
+            <div class="brand-text">
+                <h1>Pika <span>Sentinel</span></h1>
+                <p>${projectName} • ${timestamp}</p>
+            </div>
         </div>
         <div class="sidebar-stats">
             <div class="stat-box">
@@ -333,6 +536,10 @@ export function writeHTMLReport(
                 <span class="stat-val" id="totalIssues">0</span>
                 <span class="stat-lab">Issues</span>
             </div>
+            <div class="stat-box crit-stat">
+                <span class="stat-val" id="criticalIssues">0</span>
+                <span class="stat-lab">Critical</span>
+            </div>
         </div>
         <div class="file-list" id="fileList"></div>
     </aside>
@@ -340,9 +547,9 @@ export function writeHTMLReport(
     <main>
         <div class="content-container" id="mainContent">
             <div class="empty-state">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 <h3>Select a file to inspect</h3>
-                <p>Architectural findings and security insights will appear here.</p>
+                <p>Architectural anomalies and security compliance findings will appear here.</p>
             </div>
         </div>
     </main>
@@ -355,6 +562,7 @@ export function writeHTMLReport(
             const mainContent = document.getElementById('mainContent');
             const totalFilesEl = document.getElementById('totalFiles');
             const totalIssuesEl = document.getElementById('totalIssues');
+            const criticalIssuesEl = document.getElementById('criticalIssues');
 
             function escape(str) {
                 if (!str) return '';
@@ -366,9 +574,17 @@ export function writeHTMLReport(
             function init() {
                 totalFilesEl.textContent = findings.length;
                 let issuesCount = 0;
+                let criticalCount = 0;
                 
                 findings.forEach((f, index) => {
                     issuesCount += f.reviews.length;
+                    
+                    f.reviews.forEach(r => {
+                        if (r.severity === 'Critical') {
+                            criticalCount++;
+                        }
+                    });
+
                     const item = document.createElement('div');
                     item.className = 'file-item';
                     
@@ -407,6 +623,7 @@ export function writeHTMLReport(
                 });
 
                 totalIssuesEl.textContent = issuesCount;
+                criticalIssuesEl.textContent = criticalCount;
             }
 
             function selectFile(index, element) {
@@ -441,6 +658,8 @@ export function writeHTMLReport(
                     const card = document.createElement('div');
                     card.className = 'issue-card ' + r.severity;
                     
+                    const escRec = escape(r.recommendation);
+                    
                     card.innerHTML = [
                         '<div class="card-accent"></div>',
                         '<div class="issue-meta">',
@@ -457,7 +676,13 @@ export function writeHTMLReport(
                         '</div>',
                         '<div class="field-group">',
                             '<div class="field-label">🛠️ Recommendation</div>',
-                            '<pre><code>' + escape(r.recommendation) + '</code></pre>',
+                            '<div class="pre-wrapper">',
+                                '<div class="pre-header">',
+                                    '<span class="pre-lang">Code Recommendation</span>',
+                                    '<button class="card-copy-btn" onclick="copyRecommendation(this)">Copy Code</button>',
+                                '</div>',
+                                '<pre><code>' + escRec + '</code></pre>',
+                            '</div>',
                         '</div>'
                     ].join('');
 
@@ -466,6 +691,29 @@ export function writeHTMLReport(
 
                 mainContent.scrollTop = 0;
             }
+
+            window.copyRecommendation = function(btn) {
+                const preElement = btn.closest('.pre-wrapper').querySelector('pre code');
+                const text = preElement ? preElement.textContent : '';
+
+                // Decode HTML entities before copying
+                const textarea = document.createElement('textarea');
+                textarea.innerHTML = text;
+                const decodedText = textarea.value;
+
+                navigator.clipboard.writeText(decodedText).then(() => {
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied! ✓';
+                    btn.style.color = 'var(--accent)';
+                    btn.style.borderColor = 'rgba(0, 240, 255, 0.4)';
+                    
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.color = '';
+                        btn.style.borderColor = '';
+                    }, 2000);
+                });
+            };
 
             init();
         })();
