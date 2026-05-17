@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%" fill="none">
+  <!-- AI Sentinel Scanning Reticle Outer Ring -->
+  <circle cx="50" cy="50" r="44" stroke="#00F0FF" stroke-width="2" stroke-dasharray="4 8" opacity="0.3" />
+  
+  <!-- Outer Ring solid pointers -->
+  <path d="M 50,2 A 48,48 0 0,1 98,50" stroke="#00F0FF" stroke-width="1.5" opacity="0.6" stroke-dasharray="1 60 1" />
+  <path d="M 50,98 A 48,48 0 0,1 2,50" stroke="#00F0FF" stroke-width="1.5" opacity="0.6" stroke-dasharray="1 60 1" />
+
+  <!-- Inner glowing circular scan line -->
+  <circle cx="50" cy="50" r="36" stroke="url(#cyanGlow)" stroke-width="1.5" opacity="0.4" />
+
+  <!-- Cybernetic Geometric Fox Face -->
+  <!-- Left Ear -->
+  <polygon points="50,42 22,26 34,50" fill="#0c4a6e" stroke="#00F0FF" stroke-width="1.5" stroke-linejoin="round" />
+  <!-- Right Ear -->
+  <polygon points="50,42 78,26 66,50" fill="#0c4a6e" stroke="#00F0FF" stroke-width="1.5" stroke-linejoin="round" />
+  
+  <!-- Ear Inner Shadows for depth -->
+  <polygon points="46,42 26,29 34,48" fill="#075985" opacity="0.6" />
+  <polygon points="54,42 74,29 66,48" fill="#075985" opacity="0.6" />
+
+  <!-- Main Cheeks and Face -->
+  <polygon points="50,78 20,48 36,48" fill="#0f172a" stroke="#00F0FF" stroke-width="1.5" stroke-linejoin="round" />
+  <polygon points="50,78 80,48 64,48" fill="#0f172a" stroke="#00F0FF" stroke-width="1.5" stroke-linejoin="round" />
+
+  <!-- Inner Face core panel -->
+  <polygon points="50,42 36,48 50,78" fill="#1e293b" stroke="#00F0FF" stroke-width="1.5" stroke-linejoin="round" />
+  <polygon points="50,42 64,48 50,78" fill="#1e293b" stroke="#00F0FF" stroke-width="1.5" stroke-linejoin="round" />
+
+  <!-- Glowing Cyber Eyes -->
+  <polygon points="40,52 46,50 44,56" fill="#00F0FF" />
+  <polygon points="60,52 54,50 56,56" fill="#00F0FF" />
+
+  <!-- Target HUD crosshair overlays -->
+  <line x1="50" y1="8" x2="50" y2="16" stroke="#00F0FF" stroke-width="2" stroke-linecap="round" />
+  <line x1="50" y1="84" x2="50" y2="92" stroke="#00F0FF" stroke-width="2" stroke-linecap="round" />
+  <line x1="8" x2="16" y1="50" y2="50" stroke="#00F0FF" stroke-width="2" stroke-linecap="round" />
+  <line x1="84" x2="92" y1="50" y2="50" stroke="#00F0FF" stroke-width="2" stroke-linecap="round" />
+
+  <!-- Glow Defs -->
+  <defs>
+    <linearGradient id="cyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+  </defs>
+</svg>

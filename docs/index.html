@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pika Review | AI Architectural Sentinel & Compliance Engine</title>
+  <meta name="description" content="An enterprise-grade, private, offline-first AI code reviewer and architectural sentinel. Enforce code rules, verify git staged files, and prevent compliance debt.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/x-icon" href="assets/logo.svg">
+</head>
+<body>
+
+  <!-- Background Decorative Patterns -->
+  <div class="bg-grid"></div>
+  <div class="bg-radial"></div>
+
+  <!-- Glassmorphic Header -->
+  <header>
+    <a href="#" class="brand">
+      <img src="assets/logo.svg" alt="Pika Review Logo">
+      <span class="brand-text">Pika Review</span>
+      <span class="brand-badge">v2.1.0</span>
+    </a>
+    <div class="header-links">
+      <a href="#intro" class="header-btn">Docs</a>
+      <a href="#commands" class="header-btn">CLI Commands</a>
+      <a href="#setup" class="header-btn">Ollama Config</a>
+      <a href="https://github.com/HackX-IN/pika-review" target="_blank" class="header-btn header-btn-primary">GitHub Repo</a>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">☰</button>
+  </header>
+
+  <!-- Main Container -->
+  <div class="layout-wrapper">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="search-box">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" id="searchInput" placeholder="Filter topics...">
+      </div>
+
+      <nav>
+        <div class="sidebar-nav-title">Getting Started</div>
+        <ul class="sidebar-nav-links">
+          <li><a href="#intro" class="active">Introduction</a></li>
+          <li><a href="#install">Installation</a></li>
+          <li><a href="#setup">Configuration</a></li>
+        </ul>
+
+        <div class="sidebar-nav-title">Features</div>
+        <ul class="sidebar-nav-links">
+          <li><a href="#commands">CLI Reference</a></li>
+          <li><a href="#rules">Rules Engine</a></li>
+          <li><a href="#hooks">Git Safeguards</a></li>
+        </ul>
+
+        <div class="sidebar-nav-title">Community</div>
+        <ul class="sidebar-nav-links">
+          <li><a href="#contributing">Contributing</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content-pane">
+      
+      <!-- HERO AREA -->
+      <section class="hero">
+        <h1>Private, Offline-First AI Architectural Code Reviews</h1>
+        <p>The surgical command-line sentinel that automatically scans git diffs against architectural rules locally using private Ollama models.</p>
+        <div class="hero-actions">
+          <a href="#install" class="header-btn header-btn-primary">Get Started</a>
+          <a href="https://github.com/HackX-IN/pika-review" target="_blank" class="header-btn" style="border: 1px solid hsl(var(--border)); padding: 8px 16px; border-radius: 6px; font-weight: 500;">Star on GitHub</a>
+        </div>
+
+        <!-- Premium Interactive Terminal Simulation -->
+        <div class="terminal-wrapper">
+          <div class="terminal-header">
+            <div class="terminal-dot dot-red"></div>
+            <div class="terminal-dot dot-yellow"></div>
+            <div class="terminal-dot dot-green"></div>
+            <div class="terminal-title">bash - dev@pika-review</div>
+          </div>
+          <div class="terminal-body" id="terminalBody">
+            <span class="terminal-prompt">dev@pika-review:~$ </span><span class="terminal-input" id="terminalInput"><span class="cursor"></span></span>
+          </div>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- INTRODUCTION -->
+      <section id="intro">
+        <h2>🏛️ Introduction</h2>
+        <p><strong>Pika Review</strong> is an enterprise-grade AI Code Reviewer designed to run natively and privately on your developer workstation. Instead of sending full source code bundles to proprietary cloud platforms, Pika surgical-scans only your staged git changes against project-specific compliance rules stored locally in your repository.</p>
+        
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-icon">🦙</div>
+            <h3 class="card-title">100% Offline-First</h3>
+            <p class="card-desc">No API keys required. Connect natively to local Ollama tag daemons (like Qwen, Llama, and Codegemma) and keep your proprietary code strictly on your local machine.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🧠</div>
+            <h3 class="card-title">Custom Rules</h3>
+            <p class="card-desc">Define naming architectures, framework boundaries, state models, or security policies in plain English inside a simple <code>.pika-rules.md</code> file.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🛡️</div>
+            <h3 class="card-title">Git Safeguards</h3>
+            <p class="card-desc">Install automated, backup-safe pre-commit hooks that scan code before commits are created, intercepting high-severity compliance debt in real-time.</p>
+          </div>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- INSTALLATION -->
+      <section id="install">
+        <h2>📦 Installation</h2>
+        <p>Pika Review is written in strict TypeScript and works on Mac, Linux, and Windows. You can install it globally via your preferred package manager:</p>
+
+        <!-- Interactive Package Manager Tabs -->
+        <div class="tabs-container">
+          <div class="tabs-header">
+            <button class="tab-btn active" data-tab="bun">Bun (Recommended)</button>
+            <button class="tab-btn" data-tab="npm">NPM</button>
+            <button class="tab-btn" data-tab="yarn">Yarn</button>
+          </div>
+          
+          <div class="tab-pane active" id="bun">
+            <div class="code-block-wrapper">
+              <div class="code-block-header">
+                <span class="code-block-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode('bunInstall')">Copy</button>
+              </div>
+              <pre><code id="bunInstall">bun add -g pika-review</code></pre>
+            </div>
+          </div>
+
+          <div class="tab-pane" id="npm">
+            <div class="code-block-wrapper">
+              <div class="code-block-header">
+                <span class="code-block-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode('npmInstall')">Copy</button>
+              </div>
+              <pre><code id="npmInstall">npm install -g pika-review</code></pre>
+            </div>
+          </div>
+
+          <div class="tab-pane" id="yarn">
+            <div class="code-block-wrapper">
+              <div class="code-block-header">
+                <span class="code-block-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode('yarnInstall')">Copy</button>
+              </div>
+              <pre><code id="yarnInstall">yarn global add pika-review</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- CONFIGURATIONS -->
+      <section id="setup">
+        <h2>🛠️ Configuration Schema</h2>
+        <p>Initializing Pika Review creates a global YAML configuration file located at <code class="inline-code">~/.pika-review.yaml</code>. Below is the detailed parameter layout:</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline-code">ai.provider</code></td>
+              <td>String</td>
+              <td><code>"openai"</code></td>
+              <td>Primary engine. Use <code>"ollama"</code> for private local scanning.</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">ai.apiKey</code></td>
+              <td>String</td>
+              <td><code>""</code></td>
+              <td>Secret credentials for cloud providers. (Optional/Bypassed for Ollama).</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">ai.accountId</code></td>
+              <td>String</td>
+              <td><code>""</code></td>
+              <td>Required only if provider is explicitly set to Cloudflare.</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">ai.model</code></td>
+              <td>String</td>
+              <td><code>"gpt-4o"</code></td>
+              <td>The target LLM model name (e.g. <code>"qwen2.5-coder:7b"</code> locally).</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">ai.baseURL</code></td>
+              <td>String</td>
+              <td><code>"https://api.openai.com/v1"</code></td>
+              <td>Custom endpoint. Set to <code>"http://localhost:11434/v1"</code> for local Ollama.</td>
+            </tr>
+            <tr>
+              <td><code class="inline-code">scanner.ignoreFiles</code></td>
+              <td>Array</td>
+              <td>Standard lock/media</td>
+              <td>Global file suffixes ignored by scanning loops.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="alert alert-tip">
+          <div class="alert-icon">💡</div>
+          <div class="alert-content">
+            <p><strong>Pro-Tip:</strong> Pika Review skips key validation automatically if <code>ai.provider</code> is set to <code>"ollama"</code>, allowing you to operate immediately behind restrictive firewalls or entirely without internet access.</p>
+          </div>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- CLI REFERENCE -->
+      <section id="commands">
+        <h2>⌨️ CLI Command Reference</h2>
+        <p>Pika Review provides an expressive, user-friendly suite of CLI utilities to manage models, pre-commit protective hooks, and compliance sweeps:</p>
+
+        <!-- Interactive Command Accordion -->
+        <div class="cmd-accordion">
+          
+          <div class="cmd-item">
+            <button class="cmd-trigger">
+              <span class="cmd-name">pika-review scan</span>
+              <span class="cmd-arrow">▼</span>
+            </button>
+            <div class="cmd-content">
+              <p>Performs a live compliance scan of staged git changes (default behavior). Analyze specific directories or use <code>-i</code> to trigger interactive file check checkboxes.</p>
+              <div class="code-block-wrapper">
+                <pre><code># Scan staged files (standard commit guard)
+pika-review scan
+
+# Scan unstaged files
+pika-review scan -u
+
+# Run headlessly in CI/CD pipeline (fails on High/Critical issues)
+pika-review scan --ci</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmd-item">
+            <button class="cmd-trigger">
+              <span class="cmd-name">pika-review models</span>
+              <span class="cmd-arrow">▼</span>
+            </button>
+            <div class="cmd-content">
+              <p>Polls local Ollama API tags, filters available code models, and interactively switches active endpoints without manually editing configuration YAMLs on disk.</p>
+              <div class="code-block-wrapper">
+                <pre><code># Launch interactive selector
+pika-review models</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmd-item">
+            <button class="cmd-trigger">
+              <span class="cmd-name">pika-review hook [install | uninstall]</span>
+              <span class="cmd-arrow">▼</span>
+            </button>
+            <div class="cmd-content">
+              <p>Installs or removes the Git <code>pre-commit</code> protection hook. Highly secure: automatically creates backups of pre-existing hooks and restores them during uninstallation.</p>
+              <div class="code-block-wrapper">
+                <pre><code># Inject quality shield in current repository
+pika-review hook install
+
+# Cleanly restore previous hook configs
+pika-review hook uninstall</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="cmd-item">
+            <button class="cmd-trigger">
+              <span class="cmd-name">pika-review rules --generate</span>
+              <span class="cmd-arrow">▼</span>
+            </button>
+            <div class="cmd-content">
+              <p>Scans the folders, names, and dependency specifications of your project. It automatically drafts a tailored <code>.pika-rules.md</code> template file featuring customized architectural guidelines matching your frameworks.</p>
+              <div class="code-block-wrapper">
+                <pre><code># Auto-bootstrap compliance regulations
+pika-review rules --generate</code></pre>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- RULES ENGINE -->
+      <section id="rules">
+        <h2>🧠 The Local Rules Engine</h2>
+        <p>Pika Review reads custom architectural regulations directly from your project's root in a file called <strong><code>.pika-rules.md</code></strong>. The rules are written in plain, human-readable English.</p>
+
+        <div class="code-block-wrapper">
+          <div class="code-block-header">
+            <span class="code-block-lang">markdown</span>
+          </div>
+          <pre><code># Architectural Rules
+
+## 🏛️ Component Boundaries
+- All React components must reside in folders matching `src/components/` and be declared using standard ES6 functional wrappers.
+- Never use direct state manipulation in visual files; state must pass through our global Zustand stores.
+
+## 🔐 Security
+- Prevent hardcoded auth headers. Always fetch secret credentials through env providers.
+- Prevent sql raw strings in repositories; queries must go through the Prisma client.</code></pre>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- GIT SAFEGUARDS -->
+      <section id="hooks">
+        <h2>🛡️ Git Safeguard Hook Workflow</h2>
+        <p>Installing Pika Review hooks intercepts git commits seamlessly. If a developer attempts to commit code containing high-severity architectural anomalies, the pre-commit script runs headlessly, catches the violation, and halts the commit before it can pollute the branch history.</p>
+
+        <div class="alert alert-warning">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-content">
+            <p><strong>Note:</strong> In headless pipeline runners (such as GitHub Actions or GitLab Runner), you can override default displays by passing the <code>--ci</code> parameter. This forces a clean text output and returns a non-zero exit code if high-severity anomalies are uncovered, safely failing the PR build!</p>
+          </div>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- CONTRIBUTING -->
+      <section id="contributing">
+        <h2>🤝 Contributing</h2>
+        <p>We welcome PRs, bug reports, and suggestions from the engineering community! If you are interested in extending CLI subcommands or optimization parsers, check out our master developer blueprint:</p>
+        <p>Read the official <a href="https://github.com/HackX-IN/pika-review/blob/main/CONTRIBUTING.md" target="_blank" class="doc-link">Contributing Guide</a> to quickly bootstrap your environment.</p>
+      </section>
+
+    </main>
+
+    <!-- Right Outline Navigation -->
+    <aside class="toc-pane">
+      <div class="toc-title">On This Page</div>
+      <ul class="toc-links">
+        <li><a href="#intro" class="active">Introduction</a></li>
+        <li><a href="#install">Installation</a></li>
+        <li><a href="#setup">Configuration</a></li>
+        <li><a href="#commands">CLI Reference</a></li>
+        <li><a href="#rules">Rules Engine</a></li>
+        <li><a href="#hooks">Git Safeguards</a></li>
+        <li><a href="#contributing">Contributing</a></li>
+      </ul>
+    </aside>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
